@@ -25,7 +25,7 @@ rm composer.lock
 
 # Install production dependencies.
 # Todo: Not needed if we exclude the vendor folder.
-sudo chmod -R a+w build/
+chmod -R a+w build/
 rm -rf build/
 rm -rf vendor/
 composer install --no-dev
