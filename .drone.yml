@@ -1,0 +1,54 @@
+workspace:
+  base: /test
+  path: oe_theme
+
+services:
+  web:
+    image: fpfis/php71-build:latest
+    environment:
+     - DOCUMENT_ROOT=/test/oe_theme
+  mysql:
+    image: fpfis/mysql56
+
+pipeline:
+  npm-build:
+    group: prepare
+    image: node
+    commands: 
+      - npm install
+      - npm run build
+
+  composer-install:
+    group: prepare
+    image: fpfis/php71-build
+    commands:
+      - composer install
+
+  composer-sa-check:
+    image: phpdrone/composer-sa-checker
+    lock_file: composer.lock
+
+  site-install:
+    image: fpfis/php71-build
+    commands:
+      - ./vendor/bin/run drupal:site-setup
+      - ./vendor/bin/run drupal:site-install
+
+  grumphp:
+    group: test
+    image: fpfis/php71-build
+    commands:
+      - ./vendor/bin/grumphp run
+
+  phpunit:
+    group: test
+    image: fpfis/php71-build
+    commands:
+      - ./vendor/bin/phpunit
+
+  behat:
+    group: test
+    image: fpfis/php71-build
+    commands:
+      - ./vendor/bin/behat
+
