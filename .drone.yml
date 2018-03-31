@@ -10,6 +10,12 @@ services:
   mysql:
     image: fpfis/mysql56
 
+matrix:
+  DRUPAL_VERSION:
+    - 8.6.x
+    - 8.5.x
+    - 8.5.x-dev
+
 pipeline:
   npm-build:
     group: prepare
@@ -22,7 +28,7 @@ pipeline:
     group: prepare
     image: fpfis/php71-build
     commands:
-      - composer install
+      - composer require drupal/core:${DRUPAL_VERSION}
 
   composer-sa-check:
     image: phpdrone/composer-sa-checker
