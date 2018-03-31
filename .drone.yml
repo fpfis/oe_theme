@@ -27,6 +27,8 @@ pipeline:
   composer-install:
     group: prepare
     image: fpfis/php71-build
+    volumes:
+      - /cache:/cache
     commands:
       - composer require drupal/core:${DRUPAL_VERSION}
 
