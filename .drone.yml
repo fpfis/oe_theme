@@ -63,6 +63,8 @@ pipeline:
     commands:
       - ./scripts/drone/create-release-tarball.sh
     when:
+      matrix:
+        DRUPAL_VERSION: 8.5.x
       event: tag
 
   github-release:
@@ -70,4 +72,6 @@ pipeline:
     secrets: [ github_token ]
     files: oe_theme-${DRONE_TAG}.tar.gz
     when:
+      matrix:
+        DRUPAL_VERSION: 8.5.x
       event: tag
