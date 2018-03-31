@@ -16,4 +16,4 @@ metrics:
 
 scenarios:
     Home page:
-        - /build/
+        - /
