@@ -58,3 +58,16 @@ pipeline:
     commands:
       - ./vendor/bin/behat
 
+  before-release:
+    image: fpfis/php71-build
+    commands:
+      - ./scripts/drone/create-release-tarball.sh
+    when:
+      event: tag
+
+  github-release:
+    image: plugins/github-release
+    secrets: [ github_token ]
+    files: oe_theme-${DRONE_TAG}.tar.gz
+    when:
+      event: tag
