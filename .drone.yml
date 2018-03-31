@@ -9,6 +9,19 @@ services:
      - DOCUMENT_ROOT=/test/oe_theme
   mysql:
     image: fpfis/mysql56
+  blackfire:
+    image: blackfire/blackfire
+    secrets: [  blackfire_server_id, blackfire_server_token ]
+  frpc-tunnel:
+    image: fpfis/drone-frpc-plugin:latest
+    when:
+      event: [ push, pull_request, tag ]
+    secrets: [ frpc_token, frpc_server ]
+    environment:
+      - PLUGIN_ENDPOINT=web:8080
+      - PLUGIN_GEN_AUTH=yes
+      - PLUGIN_DOMAIN=oetheme-${DRONE_BUILD_NUMBER}-${DRONE_JOB_NUMBER}.ci.fpfis.tech.ec.europa.eu
+      - PLUGIN_URL_OUTPUT_FILE=/test/oe_theme/.frpc
 
 matrix:
   DRUPAL_VERSION:
@@ -30,7 +43,7 @@ pipeline:
     volumes:
       - /cache:/cache
     commands:
-      - composer require drupal/core:${DRUPAL_VERSION}
+      - composer require drupal/core:${DRUPAL_VERSION=8.5.x}
 
   composer-sa-check:
     image: phpdrone/composer-sa-checker
@@ -60,6 +73,15 @@ pipeline:
     commands:
       - ./vendor/bin/behat
 
+  blackfire-test:
+    image: blackfire/blackfire
+    secrets: [ blackfire_client_id, blackfire_client_token ]
+    commands:
+      - source /test/oe_theme/.frpc.env
+      - cp -p .blackfire.yml build/
+      - blackfire build-trigger --external-id=${DRONE_REPO_OWNER}-${DRONE_REPO_NAME}-${DRONE_BUILD_NUMBER}-${DRONE_JOB_NUMBER} --external-parent-id=${DRONE_REPO_OWNER}-${DRONE_REPO_NAME}-${DRONE_PREV_BUILD_NUMBER}-${DRONE_JOB_NUMBER} --http-username="$${FRP_HTTP_USERNAME}" --http-password="$${FRP_HTTP_PASSWORD}" --env=ci "$${FRP_HTTP_URL}" --title="${DRONE_REPO} build ${DRONE_BUILD_NUMBER} job ${DRONE_JOB_NUMBER}" --external-url="${DRONE_BUILD_LINK}"
+
+
   before-release:
     image: fpfis/php71-build
     commands:
@@ -77,3 +99,5 @@ pipeline:
       matrix:
         DRUPAL_VERSION: 8.5.x
       event: tag
+
+

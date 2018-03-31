@@ -1,0 +1,19 @@
+tests:
+    "Pages should be fast enough":
+        path: "/.*" # run the assertions for all HTTP requests
+        assertions:
+            - "main.wall_time < 500ms" # wall clock time is less than 100ms
+            - "metrics.sql.queries.count < 300"
+            - "main.peak_memory < 128MB"
+            - "metrics.itop.queries.count < 5"
+
+metrics:
+  itop.queries: # metric name
+    label: "ITopClient::sendRequest() calls"
+    matching_calls:
+      php:
+        - callee: '/ITopClient::sendRequest$/'
+
+scenarios:
+    Home page:
+        - /build/
